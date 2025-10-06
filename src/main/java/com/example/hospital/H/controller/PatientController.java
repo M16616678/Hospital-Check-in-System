@@ -39,7 +39,7 @@ public class PatientController {
 	                                      HttpServletRequest req) {
 	    log.info("Headers: {}", req.getHeader("Content-Type"));
 	    log.info("Body dto: {}", dto);
-	    log.info(">>>> dto = {}", dto);
+	    log.info(">>>> dto  === {}", dto);
 	    Patient saved = svc.create(dto.toEntity());
 	    return ResponseEntity.status(HttpStatus.CREATED).body(saved);
 	}
