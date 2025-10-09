@@ -1,42 +1,38 @@
 package com.example.hospital.H.service;
 
 import java.util.List;
-import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.hospital.H.exception.PatientNotFoundException;
 import com.example.hospital.H.model.CheckIn;
 import com.example.hospital.H.model.Patient;
 import com.example.hospital.H.repository.CheckInRepository;
-import com.example.hospital.H.repository.PatientRepository;
 
 @Service
 public class CheckInService {
+    private final CheckInRepository checkInRepository;
+    private final PatientService patientService;
 
-    private final CheckInRepository checkInRepo;
-    private final PatientRepository patientRepo;
-
-    public CheckInService(CheckInRepository cRepo, PatientRepository pRepo) {
-        this.checkInRepo = cRepo;
-        this.patientRepo = pRepo;
+    @Autowired
+    public CheckInService(CheckInRepository checkInRepository, PatientService patientService) {
+        this.checkInRepository = checkInRepository;
+        this.patientService = patientService;
     }
 
     public CheckIn create(Long patientId, String reason) {
-        Patient patient = patientRepo.findById(patientId)
-                .orElseThrow(() -> new PatientNotFoundException(patientId));
-        CheckIn ci = new CheckIn();
-        ci.setPatient(patient);
-        ci.setReason(reason);
-        ci.setStatus("CHECKED_IN");
-        return checkInRepo.save(ci);
+        Patient patient = patientService.getPatientById(patientId)
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found with ID: " + patientId));
+
+        CheckIn checkIn = new CheckIn();
+        checkIn.setPatient(patient);
+        checkIn.setReason(reason);
+        // The CheckIn model already defaults checkInTime and status
+
+        return checkInRepository.save(checkIn);
     }
 
     public List<CheckIn> list() {
-        return checkInRepo.findAll();
+        return checkInRepository.findAll();
     }
-
-    public Optional<CheckIn> findById(Long id) {
-        return checkInRepo.findById(id);
-    }
-}
+}	

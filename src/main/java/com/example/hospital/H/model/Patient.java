@@ -1,26 +1,37 @@
-package com.example.hospital.H.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+package com.example.hospital.H.model;
 
 import java.time.LocalDate;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 @Entity
-@Table(name = "patients")
 public class Patient {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @NotBlank
-    private String firstName;
-    @NotBlank
-    private String lastName;
-    @Email
-    private String email;
-    @NotBlank
-    private String phone;
-    
-    private LocalDate dob;
+ @Id
+ @GeneratedValue(strategy = GenerationType.IDENTITY)
+ private Long id;
+
+ @NotBlank(message = "First name cannot be blank")
+ private String firstName;
+
+ @NotBlank(message = "Last name cannot be blank")
+ private String lastName;
+
+ @NotBlank(message = "Email cannot be blank")
+ @Email(message = "Email should be valid")
+ private String email;
+
+ @NotBlank(message = "Phone number cannot be blank")
+ private String phone;
+ 
+ private LocalDate dob; // Date of birth
+
+ // Constructors, Getters, and Setters
 
     // getters and setters
     public Long getId() { return id; }

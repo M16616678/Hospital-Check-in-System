@@ -1,58 +1,74 @@
+// src/main/java/com/example/hospital/H/controller/PatientController.java
+
 package com.example.hospital.H.controller;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.hospital.H.dto.PatientCreateDto;
 import com.example.hospital.H.model.Patient;
 import com.example.hospital.H.service.PatientService;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
-
-@Valid
 @RestController
 @RequestMapping("/api/patients")
 public class PatientController {
-	
-	private static final org.slf4j.Logger log =
-	        org.slf4j.LoggerFactory.getLogger(PatientController.class);
-	
-	private final PatientService svc;
+    private final PatientService patientService;
 
-	public PatientController(PatientService svc) {
-		this.svc = svc;
-	}
+    @Autowired
+    public PatientController(PatientService patientService) {
+        this.patientService = patientService;
+    }
 
-	@PostMapping
-	public ResponseEntity<Patient> create(@Valid @RequestBody PatientCreateDto dto,
-	                                      HttpServletRequest req) {
-	    log.info("Headers: {}", req.getHeader("Content-Type"));
-	    log.info("Body dto: {}", dto);
-	    log.info(">>>> dto  === {}", dto);
-	    Patient saved = svc.create(dto.toEntity());
-	    return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-	}
+    @GetMapping
+    public List<Patient> getAllPatients() {
+        return patientService.getAllPatients();
+    }
 
-	@GetMapping
-	@Operation(summary = "List all patients")
-	public List<Patient> list() {
-		return svc.findAll();
-	}
+    @GetMapping("/{id}")
+    public ResponseEntity<Patient> getPatientById(@PathVariable Long id) {
+        return patientService.getPatientById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
-	@GetMapping("/{id}")
-	@Operation(summary = "List all patients")
-	public ResponseEntity<Patient> get(@PathVariable Long id) {
-		return svc.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
-	}
+    @PostMapping
+    public Patient createPatient(@Valid @RequestBody Patient patient) {
+        return patientService.savePatient(patient);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @Valid @RequestBody Patient patientDetails) {
+        return patientService.getPatientById(id)
+                .map(patient -> {
+                    patient.setFirstName(patientDetails.getFirstName());
+                    patient.setLastName(patientDetails.getLastName());
+                    patient.setEmail(patientDetails.getEmail());
+                    patient.setPhone(patientDetails.getPhone());
+                    patient.setDob(patientDetails.getDob());
+                    Patient updatedPatient = patientService.savePatient(patient);
+                    return ResponseEntity.ok(updatedPatient);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePatient(@PathVariable Long id) {
+        return patientService.getPatientById(id)
+                .map(patient -> {
+                    patientService.deletePatient(id);
+                    return ResponseEntity.ok().<Void>build();
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
